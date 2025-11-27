@@ -1,6 +1,12 @@
 # Windows 11 Startup Setup Guide for Reset Volume Script
 
-## Simple Batch File Method (Easiest)
+## Task Scheduler Method (Recommended for Windows 11 Security Compliance)
+
+**Why Task Scheduler instead of Startup Folder?**
+- More secure and compliant with Windows 11 security policies
+- Better suited for environments where computers are infrequently restarted
+- Runs at user logon and workstation unlock events
+- More reliable and easier to manage
 
 ### Prerequisites
 1. **Python 3.8+** installed on the system
@@ -22,12 +28,32 @@
    - Example: `cd /d "C:\Users\YourName\Documents\reset_volume"`
    - Save the file
 
-2. **Copy the edited batch file** to Windows Startup folder:
-   - Press `Win + R` and type: `shell:startup`
-   - Press Enter to open the Startup folder
-   - Copy the edited `reset_volume_startup.bat` to this folder
+2. **Create a Task Scheduler task**:
+   - Press `Win + R` and type: `taskschd.msc`
+   - Press Enter to open Task Scheduler
+   - In the right panel, click "Create Task..."
+   - **General tab**:
+     - Name: "Reset Volume on Logon"
+     - Check "Run only when user is logged on"
+     - Check "Run with highest privileges" (if needed for volume control)
+     - Check "Hidden" (optional)
+   - **Triggers tab**:
+     - Click "New..."
+     - Begin the task: "At log on"
+     - Specific user: Select your user account
+     - Check "Enabled"
+     - Click "OK"
+   - **Actions tab**:
+     - Click "New..."
+     - Action: "Start a program"
+     - Program/script: Browse to your `reset_volume_startup.bat` file
+     - Start in: Set to the directory containing your script (e.g., `C:\Users\YourName\Documents\reset_volume`)
+     - Click "OK"
+   - **Conditions tab** (optional but recommended):
+     - Uncheck "Start the task only if the computer is on AC power" (if applicable)
+   - Click "OK" to save the task
 
-3. **That's it!** The script will run automatically when you log in
+3. **That's it!** The script will run automatically when you log in or unlock your workstation
 
 ### How It Works
 The batch file (`reset_volume_startup.bat`) automatically:
@@ -81,11 +107,14 @@ pip install pycaw comtypes
   9. **Important**: Restart your computer for PATH changes to take effect
 - **Test that nircmd works**: Open Command Prompt and type `nircmd` - you should see the help text
 
-**If the script doesn't run at startup:**
-- Make sure the batch file is in the correct Startup folder
+**If the script doesn't run at logon/unlock:**
+- Open Task Scheduler (`taskschd.msc`) and verify the task exists and is enabled
+- Right-click the task and select "Run" to test it manually
+- Check the task's History tab for any error messages
 - Test the batch file manually first
 - Check that Python and dependencies are properly installed
 
-### Startup Folder Location
-- **Quick access**: Press `Win + R`, type `shell:startup`
-- **Full path**: `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup`
+### Task Scheduler Access
+- **Quick access**: Press `Win + R`, type `taskschd.msc`
+- **Alternative**: Search for "Task Scheduler" in Windows search
+- **Library location**: Task Scheduler Library → Your created tasks appear here
